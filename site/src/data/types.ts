@@ -2,9 +2,18 @@ export type ModelId = 'seedance' | 'kling';
 
 /** One generated clip. `src` is relative to site/public/media/. */
 export interface Take {
+  /** The clip, or for a blocked attempt, a screenshot of the refusal. */
   src: string;
   /** 'ng' = misses the intent (NG stamp). 'ok' = a keeper. Leave empty if unjudged. */
   verdict?: 'ng' | 'ok';
+  /** The model's content filter refused to render this attempt. */
+  blocked?: boolean;
+}
+
+/** How often a model's content filter refused a prompt. */
+export interface BlockStat {
+  blocked: number;
+  tries: number;
 }
 
 export interface Reference {
@@ -38,7 +47,11 @@ export interface Scenario {
   /** Shows a "placeholder data" badge until real media is in. */
   placeholder?: boolean;
   plain: Record<ModelId, Take[]>;
+  /** Content-filter refusals for the plain prompt, per model. */
+  plainBlocked?: Partial<Record<ModelId, BlockStat>>;
   enhanced: {
+    /** Content-filter refusals for the GPT-enhanced prompts, per model. */
+    blocked?: Partial<Record<ModelId, BlockStat>>;
     /** N GPT-refined prompts. prompts[i] produced takes[model][i]. */
     prompts: string[];
     takes: Record<ModelId, Take[]>;

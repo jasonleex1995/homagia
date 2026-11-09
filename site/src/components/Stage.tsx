@@ -2,8 +2,8 @@ import { AnimatePresence, motion, useInView } from 'motion/react';
 import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { SCENARIOS } from '../data/scenarios';
 import { MODELS } from '../data/site';
-import type { ModelId, Take } from '../data/types';
-import { pad2 } from '../lib/media';
+import type { BlockStat, ModelId, Take } from '../data/types';
+import { media, pad2 } from '../lib/media';
 import { EASE, PlaceholderBadge, Stamp } from './ui';
 import { Video } from './Video';
 
@@ -91,7 +91,8 @@ export function Carousel({ count, start = 0, accent = false, caption, slide }: C
 
       <div className="relative mt-5">
         <div className="overflow-hidden rounded-2xl">
-          <motion.div className="flex" animate={{ x: `${-i * 100}%` }} transition={{ duration: 0.6, ease: EASE }}>
+          {/* initial={false}: open on the start slide instead of sliding there on load. */}
+          <motion.div className="flex" initial={false} animate={{ x: `${-i * 100}%` }} transition={{ duration: 0.6, ease: EASE }}>
             {Array.from({ length: count }, (_, k) => (
               <div key={k} className="w-full shrink-0" aria-hidden={k !== i}>
                 {slide(k, seen && k === i)}
@@ -151,11 +152,14 @@ export function ModelPair({
   takes,
   live,
   glow = false,
+  stats,
 }: {
   order: ModelId[];
   takes: Partial<Record<ModelId, Take>>;
   live: boolean;
   glow?: boolean;
+  /** Content-filter refusals per model, shown on blocked attempts. */
+  stats?: Partial<Record<ModelId, BlockStat>>;
 }) {
   return (
     <div className="grid grid-cols-2 gap-2 md:gap-4">
@@ -166,14 +170,45 @@ export function ModelPair({
             key={m}
             className={`relative aspect-video overflow-hidden rounded-xl bg-ink ${glow ? 'ring-2 ring-brand-400' : 'ring-1 ring-paper/10'}`}
           >
-            {t ? <Video src={t.src} /> : <div className="hud grid h-full place-items-center">No take</div>}
+            {t?.blocked ? (
+              <BlockedTile src={t.src} model={MODELS[m].label} stat={stats?.[m]} />
+            ) : t ? (
+              <Video src={t.src} />
+            ) : (
+              <div className="hud grid h-full place-items-center">No take</div>
+            )}
             <span className="absolute left-2 top-2 rounded-full bg-ink/65 px-2.5 py-1 text-[0.7rem] font-semibold text-paper backdrop-blur md:left-3 md:top-3 md:text-xs">
               {MODELS[m].label}
             </span>
-            {live && t?.verdict && <Stamp kind={t.verdict} delay={0.35} className="bottom-2 right-2 md:bottom-3 md:right-3" />}
+            {live && t?.verdict && !t.blocked && (
+              <Stamp kind={t.verdict} delay={0.35} className="bottom-2 right-2 md:bottom-3 md:right-3" />
+            )}
           </div>
         );
       })}
+    </div>
+  );
+}
+
+/** An attempt the model refused to render: what happened, how often, and the real error screen. */
+function BlockedTile({ src, model, stat }: { src: string; model: string; stat?: BlockStat }) {
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-1.5 bg-[#0c0c0e] px-3 text-center md:gap-2.5 md:px-8">
+      <span className="rounded-[3px] border-2 border-paper/50 px-1.5 py-px font-script text-[0.6rem] font-bold tracking-[0.18em] text-paper/80 md:text-[0.72rem]">
+        BLOCKED
+      </span>
+      <p className="font-serif text-[clamp(0.8rem,1.5vw,1.3rem)] leading-tight text-paper">The content filter refused it</p>
+      {stat && (
+        <p className="hidden text-[clamp(0.62rem,0.95vw,0.85rem)] leading-snug text-paper/60 sm:block">
+          {stat.blocked} of {stat.tries} {model} attempts never rendered
+        </p>
+      )}
+      <img
+        src={media(src)}
+        alt={`${model} error screen: the output was flagged as sensitive content`}
+        loading="lazy"
+        className="mt-1 hidden max-h-[38%] rounded-md ring-1 ring-paper/15 md:block"
+      />
     </div>
   );
 }

@@ -3,10 +3,10 @@ import type { ModelId, Scenario, Take } from './types';
 /* ---------------------------------------------------------------------------
  * Scenario data. Media paths are relative to site/public/media/.
  *
- * Real: scenario 1's prompt, its four reference clips, and the creator's pick.
- * Still placeholder: the generated takes (plain, GPT-enhanced, Homagia), the
- * GPT-enhanced prompt text, and the recipe. Swap them in when they arrive,
- * then remove `placeholder: true`.
+ * Real: scenario 1's prompt, its four reference clips, the creator's pick, and
+ * the plain-prompt takes. Still placeholder: the GPT-enhanced and Homagia
+ * takes, the GPT-enhanced prompt text, and the recipe. Swap them in when they
+ * arrive, then remove `placeholder: true`.
  * ------------------------------------------------------------------------- */
 const PH = '_placeholder';
 const N = 4;
@@ -31,7 +31,15 @@ export const SCENARIOS: Scenario[] = [
     title: 'The Confession',
     placeholder: true,
     query: 'A man expresses his love to a woman in an indirect, romantic, non-sexual way',
-    plain: placeholderTakes('plain'),
+    plain: {
+      kling: [1, 2, 3, 4].map((i) => ({ src: `s1/plain/kling-${i}.mp4`, verdict: 'ng' as const })),
+      seedance: [
+        ...[1, 2, 3].map((i) => ({ src: `s1/plain/seedance-${i}.mp4`, verdict: 'ng' as const })),
+        { src: 's1/plain/seedance-blocked.png', blocked: true },
+      ],
+    },
+    // Seedance's content filter refused 6 of 10 attempts at this exact prompt.
+    plainBlocked: { seedance: { blocked: 6, tries: 10 } },
     enhanced: {
       prompts: Array.from({ length: N }, () => GPT_DRAFT),
       takes: placeholderTakes('gpt'),
