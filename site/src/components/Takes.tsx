@@ -37,7 +37,7 @@ export function TakeTile({ take, index, label, appearDelay, stampDelay = 0.4, ac
             }
           : undefined
       }
-      className={`group relative aspect-video overflow-hidden rounded-md bg-ink-3 transition-shadow ${
+      className={`group relative aspect-video overflow-hidden rounded-md bg-ink transition-shadow ${
         active ? 'ring-2 ring-paper' : 'ring-1 ring-paper/10'
       } ${onClick ? 'cursor-pointer hover:ring-paper/45' : ''}`}
     >

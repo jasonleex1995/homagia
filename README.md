@@ -2,7 +2,7 @@
 
 **Directing-reference search for a billion creators.**
 
-Describe how a scene should feel. Homagia finds the film scene that already nailed it, then turns it into a shot-by-shot recipe your AI video model can follow.
+Describe how a scene should feel. Homagia shows you how the masters already shot it, then turns it into a cut-by-cut recipe your video model can follow.
 
 - **Project page:** https://jasonleex1995.github.io/homagia/
 - **Demo video:** coming soon

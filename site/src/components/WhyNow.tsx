@@ -1,6 +1,6 @@
 import { useInView } from 'motion/react';
 import { useRef } from 'react';
-import { Counter, RevealWords, SectionTag } from './ui';
+import { Counter, Phrases, RevealWords, SectionTag } from './ui';
 
 // Figures from the pitch deck (sources listed under the section).
 const STATS = [
@@ -17,16 +17,15 @@ export function WhyNow() {
     <section id="why-now" className="relative border-t border-paper/10 py-28 md:py-40">
       <div className="mx-auto max-w-[1400px] px-5 md:px-8">
         <SectionTag n="06" label="Why now" />
-        <h2 className="display mt-5 max-w-[18ch] text-[clamp(2.2rem,5vw,4.4rem)]">
-          <RevealWords text="Creators already pay to generate." />
+        <h2 className="display mt-5 text-[clamp(2.2rem,5vw,4.4rem)]">
+          <RevealWords text="Creators already pay | to generate." />
         </h2>
-        <p className="mt-6 max-w-2xl text-lg leading-relaxed text-paper/60">
-          AI created a new kind of video maker. Generation is their camera, so direction is their main way to raise
-          quality.
+        <p className="mt-6 max-w-3xl text-lg leading-relaxed text-paper/60">
+          <Phrases text={'AI created a new kind of video maker.\nGeneration is their camera, | so direction is their main way | to raise quality.'} />
         </p>
         <div ref={grid} className="mt-14 grid gap-px overflow-hidden rounded-2xl bg-paper/10 md:grid-cols-3">
           {STATS.map((s) => (
-            <div key={s.label} className="bg-ink p-7 md:p-9">
+            <div key={s.label} className="bg-ink-2 p-7 md:p-9">
               <div className="display text-[clamp(3.2rem,6vw,5.5rem)]">
                 {s.pre}
                 <Counter from={0} value={inView ? s.to : 0} duration={1.8} />
@@ -37,10 +36,12 @@ export function WhyNow() {
             </div>
           ))}
         </div>
-        <p className="mt-16 font-serif text-[clamp(1.8rem,3.6vw,3.2rem)] leading-tight text-coral">
-          <RevealWords text="Generators make money when you reroll." />
+        <p className="mt-16 font-serif text-[clamp(1.8rem,3.6vw,3.2rem)] leading-tight">
+          <span className="text-paper/45">
+            <RevealWords text="Generators make money | when you reroll." />
+          </span>
           <br />
-          <RevealWords text="We make money when you don’t." delay={0.4} />
+          <RevealWords text="We make money | when you don’t." delay={0.4} />
         </p>
         <p className="mt-6 font-script text-xs text-paper/35">Sources: Higgsfield company blog; Kuaishou Q1 2026 results.</p>
       </div>

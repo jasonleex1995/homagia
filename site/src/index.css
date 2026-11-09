@@ -1,12 +1,24 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #0a0a0a;
-  --color-ink-2: #111111;
-  --color-ink-3: #1a1a1a;
-  --color-paper: #f5f2ea;
-  --color-crimson: #d6293e;
-  --color-coral: #f2727f;
+  /* Homagia brand scale (HSB hue 268–269°) from the team palette. The light pastel steps
+     (50–300) are left out on purpose: light surfaces and text use neutrals instead. */
+  --color-brand-400: #954ee6;
+  --color-brand-500: #7b1fde;
+  --color-brand-600: #621bb2;
+  --color-brand-700: #4b1387;
+  --color-brand-800: #3e1070;
+  --color-brand-900: #310d59;
+  --color-brand-950: #19062e;
+
+  /* Roles */
+  --color-ink: #000000; /* page background; neutral dark text inside .surface-light */
+  --color-ink-2: #19062e; /* raised dark panels (brand-950) */
+  --color-ink-3: #310d59; /* video tiles (brand-900) */
+  --color-paper: #ffffff; /* text on dark */
+  --color-mist: #f2f2f2; /* light surfaces (neutral) */
+  --color-accent: #7b1fde; /* buttons, selection, OK stamp (brand-500) */
+  --color-glow: #ffffff; /* emphasis text: white on dark, brand-500 inside .surface-light */
   --font-serif: "Source Serif 4", ui-serif, Georgia, serif;
   --font-sans: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
   --font-script: "Courier Prime", ui-monospace, Menlo, monospace;
@@ -28,11 +40,17 @@
     text-rendering: optimizeLegibility;
   }
   ::selection {
-    background: var(--color-crimson);
+    background: var(--color-accent);
     color: var(--color-paper);
   }
   button {
     cursor: pointer;
+  }
+  /* Even out multi-line headings (breaks still only happen between phrases). */
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
   }
 }
 
@@ -50,7 +68,13 @@
     font-size: 0.72rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: var(--color-crimson);
+    color: var(--color-glow);
+  }
+  /* Light neutral cards: soft black text, labels in brand-500. */
+  .surface-light {
+    --color-ink: #111111;
+    --color-glow: var(--color-brand-500);
+    color: var(--color-ink);
   }
   .hud {
     font-family: var(--font-script);

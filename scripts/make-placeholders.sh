@@ -17,21 +17,21 @@ mk() { # name color0 color1 [letterbox]
   ffmpeg -nostdin -y -loglevel error -ss 1 -i "$OUT/$name.mp4" -frames:v 1 -q:v 4 "$OUT/$name.jpg"
 }
 
-# Baseline takes: cold and flat.
-mk plain-1 0x2b3440 0x0f1216
-mk plain-2 0x30363d 0x101418
-mk plain-3 0x283038 0x0d1013
-mk plain-4 0x343a42 0x121518
-mk gpt-1 0x3a2f45 0x120f16
-mk gpt-2 0x40344a 0x141018
-mk gpt-3 0x352c40 0x100d14
-mk gpt-4 0x3d3248 0x130f17
+# Baseline takes: neutral gray (plain) and cool slate (GPT), so only Homagia carries the brand violet.
+mk plain-1 0x3a3a3e 0x101011
+mk plain-2 0x404044 0x121214
+mk plain-3 0x36363a 0x0e0e10
+mk plain-4 0x444448 0x131315
+mk gpt-1 0x2b3440 0x0f1216
+mk gpt-2 0x30363d 0x101418
+mk gpt-3 0x283038 0x0d1013
+mk gpt-4 0x343a42 0x121518
 # Film references: warm and letterboxed.
 mk ref-1 0x7a2e2a 0x1a0d0b lb
 mk ref-2 0x6b5a2a 0x16120a lb
 mk ref-3 0x2a5a5e 0x0b1516 lb
-# Homagia results.
-mk ours-1 0x8a5a2e 0x1c120a
-mk ours-2 0x7a4a3a 0x1a0f0c
+# Homagia results: brand violet.
+mk ours-1 0x7b1fde 0x19062e
+mk ours-2 0x954ee6 0x19062e
 
 echo "placeholders written to $OUT"

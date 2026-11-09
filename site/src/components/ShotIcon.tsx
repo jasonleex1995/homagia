@@ -30,7 +30,7 @@ export function ShotIcon({ size }: { size: ShotSize }) {
       {size === 'extreme' && (
         <>
           <circle cx="80" cy="-14" r="66" />
-          <path d="M80 60c-4 7-7 11-7 15a7 7 0 0 0 14 0c0-4-3-8-7-15z" fill="var(--color-crimson)" />
+          <path d="M80 60c-4 7-7 11-7 15a7 7 0 0 0 14 0c0-4-3-8-7-15z" fill="var(--color-brand-400)" />
         </>
       )}
     </svg>

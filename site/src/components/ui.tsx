@@ -1,5 +1,5 @@
 import { animate, motion, useMotionValue, useTransform } from 'motion/react';
-import { useEffect, type ReactNode } from 'react';
+import { Fragment, useEffect, type ReactNode } from 'react';
 import { MODELS, MODEL_IDS } from '../data/site';
 import type { ModelId } from '../data/types';
 
@@ -8,33 +8,85 @@ export const EASE = [0.16, 1, 0.3, 1] as const;
 export function SectionTag({ n, label }: { n: string; label: string }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="font-script text-sm text-crimson">{n}</span>
+      <span className="font-script text-sm text-glow">{n}</span>
       <span className="h-px w-10 bg-paper/25" />
       <span className="text-[0.72rem] font-bold uppercase tracking-[0.2em] text-paper/55">{label}</span>
     </div>
   );
 }
 
-/** Word-by-word mask reveal when scrolled into view. */
+/*
+ * Line-break markup for headings:
+ *   "\n"  always starts a new line
+ *   "|"   marks a phrase boundary — lines may only break there
+ * Words inside a phrase stay on one line whenever the phrase fits the width;
+ * only a phrase wider than the whole column wraps inside itself.
+ */
+const parseLines = (text: string) =>
+  text.split('\n').map((line) =>
+    line
+      .split('|')
+      .map((p) => p.trim())
+      .filter(Boolean),
+  );
+
+/** Marks clause boundaries (after , . ; : ? !) in data text so lines break between clauses. */
+export const autoPhrases = (s: string) => s.replace(/([,.;:?!])\s+/g, '$1 | ');
+
+/** Static text that only breaks between phrases. */
+export function Phrases({ text }: { text: string }) {
+  return (
+    <>
+      {parseLines(text).map((phrases, li) => (
+        <Fragment key={li}>
+          {li > 0 && <br />}
+          {phrases.map((p, pi) => (
+            <Fragment key={pi}>
+              {pi > 0 && ' '}
+              <span className="inline-block">{p}</span>
+            </Fragment>
+          ))}
+        </Fragment>
+      ))}
+    </>
+  );
+}
+
+/** Word-by-word mask reveal when scrolled into view. Accepts the same "\n" / "|" markup as Phrases. */
 export function RevealWords({ text, delay = 0, className = '' }: { text: string; delay?: number; className?: string }) {
-  const words = text.split(' ');
+  let order = 0;
   return (
     <span className={className}>
-      {words.map((w, i) => (
-        <span key={i}>
-          <span className="inline-block overflow-hidden pb-[0.14em] -mb-[0.14em] align-bottom">
-            <motion.span
-              className="inline-block"
-              initial={{ y: '110%' }}
-              whileInView={{ y: '0%' }}
-              viewport={{ once: true, margin: '0px 0px -10% 0px' }}
-              transition={{ duration: 0.95, ease: EASE, delay: delay + i * 0.04 }}
-            >
-              {w}
-            </motion.span>
-          </span>
-          {i < words.length - 1 ? ' ' : null}
-        </span>
+      {parseLines(text).map((phrases, li) => (
+        <Fragment key={li}>
+          {li > 0 && <br />}
+          {phrases.map((phrase, pi) => (
+            <Fragment key={pi}>
+              {pi > 0 && ' '}
+              <span className="inline-block">
+                {phrase.split(' ').map((w, wi, words) => {
+                  const i = order++;
+                  return (
+                    <Fragment key={wi}>
+                      <span className="inline-block overflow-hidden pb-[0.14em] -mb-[0.14em] align-bottom">
+                        <motion.span
+                          className="inline-block"
+                          initial={{ y: '110%' }}
+                          whileInView={{ y: '0%' }}
+                          viewport={{ once: true, margin: '0px 0px -10% 0px' }}
+                          transition={{ duration: 0.95, ease: EASE, delay: delay + i * 0.04 }}
+                        >
+                          {w}
+                        </motion.span>
+                      </span>
+                      {wi < words.length - 1 ? ' ' : null}
+                    </Fragment>
+                  );
+                })}
+              </span>
+            </Fragment>
+          ))}
+        </Fragment>
       ))}
     </span>
   );
@@ -61,7 +113,7 @@ export function Stamp({ kind, delay = 0, className = '' }: { kind: 'ng' | 'ok'; 
       animate={{ scale: 1, opacity: 1, rotate: ng ? -9 : -5 }}
       transition={{ delay, type: 'spring', stiffness: 520, damping: 20 }}
       className={`pointer-events-none absolute z-10 inline-block rounded-[3px] border-2 px-1.5 py-px font-script text-[0.72rem] font-bold tracking-[0.18em] ${
-        ng ? 'border-crimson bg-ink/50 text-crimson' : 'border-paper bg-paper text-ink'
+        ng ? 'border-paper/55 bg-ink/60 text-paper/75' : 'border-accent bg-accent text-paper'
       } ${className}`}
     >
       {ng ? 'NG' : 'OK'}
@@ -93,7 +145,7 @@ export function Counter({
 export function PlaceholderBadge({ show, className = '' }: { show?: boolean; className?: string }) {
   if (!show) return null;
   return (
-    <span className={`inline-block rounded border border-dashed border-coral/60 px-2 py-0.5 font-script text-[0.66rem] uppercase tracking-wider text-coral ${className}`}>
+    <span className={`inline-block rounded border border-dashed border-neutral-500/60 px-2 py-0.5 font-script text-[0.66rem] uppercase tracking-wider text-neutral-500 ${className}`}>
       Placeholder data
     </span>
   );
@@ -108,11 +160,11 @@ export function ModelToggle({ id, value, onChange, tone = 'dark' }: { id: string
           {value === m && (
             <motion.span
               layoutId={`toggle-${id}`}
-              className={`absolute inset-0 rounded-full ${dark ? 'bg-paper' : 'bg-ink'}`}
+              className="absolute inset-0 rounded-full bg-accent"
               transition={{ type: 'spring', stiffness: 500, damping: 40 }}
             />
           )}
-          <span className={`relative ${value === m ? (dark ? 'text-ink' : 'text-paper') : dark ? 'text-paper/65' : 'text-ink/55'}`}>{MODELS[m].label}</span>
+          <span className={`relative ${value === m ? 'text-paper' : dark ? 'text-paper/65' : 'text-ink/55'}`}>{MODELS[m].label}</span>
         </button>
       ))}
     </div>

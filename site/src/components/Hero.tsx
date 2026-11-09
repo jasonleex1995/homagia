@@ -3,9 +3,11 @@ import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import { SCENARIOS } from '../data/scenarios';
 import { SITE } from '../data/site';
 import { media, posterOf } from '../lib/media';
-import { EASE } from './ui';
+import { EASE, Phrases } from './ui';
 
 const CURTAIN = [0.76, 0, 0.24, 1] as const;
+const LEDE =
+  'Describe how a scene should feel.\nHomagia shows you | how the masters already shot it,\nthen turns it into a cut-by-cut recipe | your video model can follow.';
 
 /** How far each curtain bar must travel to leave a 2.39:1 frame (capped on tall screens). */
 function useLetterbox(ref: RefObject<HTMLElement | null>) {
@@ -73,7 +75,7 @@ export function Hero() {
           className="absolute inset-0"
           style={{
             background:
-              'radial-gradient(ellipse at center, rgba(10,10,10,0.1) 0%, rgba(10,10,10,0.5) 55%, rgba(10,10,10,0.95) 100%)',
+              'radial-gradient(ellipse at 50% 55%, rgba(123,31,222,0.3) 0%, rgba(0,0,0,0.45) 56%, rgba(0,0,0,0.95) 100%)',
           }}
         />
       </div>
@@ -113,7 +115,7 @@ export function Hero() {
           transition={{ delay: 1.25, duration: 0.9, ease: EASE }}
           className="text-[clamp(0.95rem,1.5vw,1.3rem)] text-paper/85"
         >
-          Directing-reference search for a billion creators
+          <Phrases text="Directing-reference search | for a billion creators" />
         </motion.p>
         <h1 className="display mt-1 text-[clamp(4.5rem,15.5vw,13.5rem)] leading-[0.9]" aria-label="Homagia">
           {'Homagia'.split('').map((ch, k) => (
@@ -133,10 +135,9 @@ export function Hero() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.7, duration: 0.9, ease: EASE }}
-          className="mt-3 max-w-[36rem] text-[clamp(1rem,1.35vw,1.18rem)] leading-relaxed text-paper/70"
+          className="mt-3 max-w-[46rem] text-[clamp(1rem,1.35vw,1.18rem)] leading-relaxed text-paper/70"
         >
-          Describe how a scene should feel. Homagia finds the film scene that already nailed it, then turns it into a
-          shot-by-shot recipe your video model can follow.
+          <Phrases text={LEDE} />
         </motion.p>
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -144,7 +145,7 @@ export function Hero() {
           transition={{ delay: 1.95, duration: 0.9, ease: EASE }}
           className="mt-8 flex flex-wrap items-center justify-center gap-3"
         >
-          <a href="#how" className="rounded-full bg-paper px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-white">
+          <a href="#how" className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-paper transition-colors hover:bg-brand-400">
             See how it works
           </a>
           {SITE.demoVideo && (

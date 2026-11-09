@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { SCENARIOS } from '../data/scenarios';
-import { Chip, EASE, RevealWords, SearchIcon, SectionTag } from './ui';
+import { Chip, EASE, Phrases, RevealWords, SearchIcon, SectionTag } from './ui';
 import { Video } from './Video';
 
 /** "People can't direct, but they recognize great directing" + keyword vs intent search. */
@@ -18,19 +18,23 @@ export function Insight() {
     <section className="relative py-28 md:py-44">
       <div className="mx-auto max-w-[1400px] px-5 md:px-8">
         <SectionTag n="02" label="The insight" />
-        <h2 className="display mt-6 max-w-[17ch] text-[clamp(2.4rem,6vw,5.6rem)]">
-          <RevealWords text="People can’t direct." />{' '}
+        <h2 className="display mt-6 text-[clamp(2.1rem,5.4vw,5rem)]">
+          <RevealWords text="People | can’t direct." />
+          <br />
           <span className="text-paper/40">
-            <RevealWords text="But they know great directing when they see it." delay={0.25} />
+            <RevealWords text={'But they know\ngreat directing\nwhen they see it.'} delay={0.25} />
           </span>
         </h2>
         <p className="mt-8 max-w-xl text-lg leading-relaxed text-paper/60">
-          Today’s reference search speaks in tags and technical terms. Creators speak in feelings. Homagia searches the
-          way they talk.
+          <Phrases
+            text={
+              'Today’s reference search speaks | in tags and technical terms.\nCreators speak in feelings.\nHomagia searches the way they talk.'
+            }
+          />
         </p>
 
         <div className="mt-16 grid gap-5 lg:grid-cols-2">
-          <motion.div {...card} transition={{ duration: 0.7, ease: EASE }} className="rounded-2xl bg-ink-2 p-6 ring-1 ring-paper/10 md:p-8">
+          <motion.div {...card} transition={{ duration: 0.7, ease: EASE }} className="rounded-2xl bg-paper/4 p-6 ring-1 ring-paper/10 md:p-8">
             <div className="flex items-center justify-between">
               <span className="text-[0.72rem] font-bold uppercase tracking-[0.2em] text-paper/50">Keyword search</span>
               <span className="font-script text-xs text-paper/35">today</span>
@@ -52,7 +56,7 @@ export function Insight() {
             <p className="mt-6 font-serif text-xl text-paper/70">Nouns work. Intent doesn’t.</p>
           </motion.div>
 
-          <motion.div {...card} transition={{ duration: 0.7, ease: EASE, delay: 0.12 }} className="rounded-2xl bg-paper p-6 text-ink md:p-8">
+          <motion.div {...card} transition={{ duration: 0.7, ease: EASE, delay: 0.12 }} className="surface-light rounded-2xl bg-mist p-6 text-ink md:p-8">
             <div className="flex items-center justify-between">
               <span className="label">Homagia · intent search</span>
               <span className="font-script text-xs text-ink/40">new</span>
@@ -76,7 +80,9 @@ export function Insight() {
                 </div>
               ))}
             </div>
-            <p className="mt-6 font-serif text-xl">A search engine that understands how a scene should feel.</p>
+            <p className="mt-6 font-serif text-xl">
+              <Phrases text="A search engine that understands | how a scene should feel." />
+            </p>
           </motion.div>
         </div>
       </div>

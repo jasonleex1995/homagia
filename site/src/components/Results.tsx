@@ -5,7 +5,7 @@ import type { ModelId, Reference, Take } from '../data/types';
 import { useSyncedVideos } from '../lib/hooks';
 import { media, pad2, posterOf, wordCount } from '../lib/media';
 import { TakeTile } from './Takes';
-import { ModelToggle, PauseIcon, PlaceholderBadge, PlayIcon, RevealWords, SectionTag, Stamp } from './ui';
+import { autoPhrases, ModelToggle, PauseIcon, Phrases, PlaceholderBadge, PlayIcon, RevealWords, SectionTag, Stamp } from './ui';
 import { Video } from './Video';
 
 type Column = { key: 'plain' | 'gpt' | 'ours'; label: string; take?: Take; prompt: string };
@@ -43,10 +43,10 @@ export function Results() {
       <div className="mx-auto max-w-[1400px] px-5 md:px-8">
         <SectionTag n="05" label="Results" />
         <h2 className="display mt-5 text-[clamp(2.4rem,5.4vw,5rem)]">
-          <RevealWords text="Same sentence. Same model." />
+          <RevealWords text="Same sentence. | Same model." />
           <br />
           <span className="text-paper/40">
-            <RevealWords text="Three ways to direct it." delay={0.2} />
+            <RevealWords text="Three ways | to direct it." delay={0.2} />
           </span>
         </h2>
 
@@ -58,7 +58,7 @@ export function Results() {
                 type="button"
                 onClick={() => setSid(i)}
                 className={`rounded-full px-4 py-2 text-sm transition-colors ${
-                  i === sid ? 'bg-paper text-ink' : 'bg-paper/6 text-paper/70 hover:bg-paper/12'
+                  i === sid ? 'bg-accent text-paper' : 'bg-paper/6 text-paper/70 hover:bg-paper/12'
                 }`}
               >
                 <span className="mr-2 font-script text-xs opacity-60">S{pad2(i + 1)}</span>
@@ -70,7 +70,9 @@ export function Results() {
         </div>
 
         <div className="mt-10 flex flex-wrap items-start justify-between gap-4">
-          <p className="max-w-4xl font-serif text-[clamp(1.25rem,2.1vw,1.75rem)] leading-snug">“{s.query}”</p>
+          <p className="max-w-4xl text-balance font-serif text-[clamp(1.25rem,2.1vw,1.75rem)] leading-snug">
+            <Phrases text={autoPhrases(`“${s.query}”`)} />
+          </p>
           <PlaceholderBadge show={s.placeholder} />
         </div>
 
@@ -119,7 +121,7 @@ export function Results() {
 
         <Compare cols={cols} resetKey={`${sid}-${model}-${pick.p}-${pick.g}-${pick.o}`} />
         <p className="mt-5 font-serif italic text-paper/45">
-          Fig. 3 — {s.title}. The three columns play in sync. Click any take above to swap it in.
+          <Phrases text={`Fig. 3 — ${s.title}. | The three columns play in sync. | Click any take above to swap it in.`} />
         </p>
       </div>
     </section>
@@ -142,7 +144,7 @@ function BoardRow({
   return (
     <div className="grid gap-3 md:grid-cols-[10.5rem_1fr] md:gap-6">
       <div className="md:pt-1">
-        <p className={`text-[0.78rem] font-bold uppercase tracking-[0.18em] ${accent ? 'text-crimson' : 'text-paper/70'}`}>{label}</p>
+        <p className={`text-[0.78rem] font-bold uppercase tracking-[0.18em] ${accent ? 'text-glow' : 'text-paper/70'}`}>{label}</p>
         <p className="mt-1 font-script text-xs text-paper/40">{meta}</p>
       </div>
       <div className="grid grid-cols-2 gap-3 sm:[grid-template-columns:var(--cols)]" style={style}>
@@ -154,7 +156,7 @@ function BoardRow({
 
 function RefTile({ r }: { r: Reference }) {
   return (
-    <div className="relative aspect-video overflow-hidden rounded-md bg-ink-3 ring-1 ring-crimson/70">
+    <div className="relative aspect-video overflow-hidden rounded-md bg-ink-3 ring-1 ring-brand-400/80">
       <Video src={r.src} small />
       <span className="absolute left-2 top-1.5 max-w-[85%] truncate font-script text-[0.66rem] uppercase tracking-wider text-paper/90 [text-shadow:0_1px_6px_rgba(0,0,0,0.8)]">
         Ref · {r.film}
@@ -175,14 +177,14 @@ function Compare({ cols, resetKey }: { cols: Column[]; resetKey: string }) {
         {cols.map((c, i) => (
           <figure key={c.key}>
             <div className="mb-2 flex items-center justify-between">
-              <span className={`text-[0.72rem] font-bold uppercase tracking-[0.18em] ${c.key === 'ours' ? 'text-crimson' : 'text-paper/60'}`}>
+              <span className={`text-[0.72rem] font-bold uppercase tracking-[0.18em] ${c.key === 'ours' ? 'text-glow' : 'text-paper/60'}`}>
                 {c.label}
               </span>
               <span className="font-script text-xs text-paper/40">{wordCount(c.prompt)} words</span>
             </div>
             <div
               className={`relative aspect-video overflow-hidden rounded-lg bg-ink ${
-                c.key === 'ours' ? 'ring-2 ring-paper/70' : 'ring-1 ring-paper/10'
+                c.key === 'ours' ? 'ring-2 ring-brand-400' : 'ring-1 ring-paper/10'
               }`}
             >
               {c.take && (
@@ -217,7 +219,7 @@ function Compare({ cols, resetKey }: { cols: Column[]; resetKey: string }) {
           type="button"
           aria-label={playing ? 'Pause' : 'Play'}
           onClick={() => setPlaying((p) => !p)}
-          className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-paper text-ink"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent text-paper"
         >
           {playing ? <PauseIcon /> : <PlayIcon />}
         </button>
@@ -228,7 +230,7 @@ function Compare({ cols, resetKey }: { cols: Column[]; resetKey: string }) {
             seek((e.clientX - r.left) / r.width);
           }}
         >
-          <div ref={bar} className="absolute inset-0 origin-left bg-crimson" style={{ transform: 'scaleX(0)' }} />
+          <div ref={bar} className="absolute inset-0 origin-left bg-brand-400" style={{ transform: 'scaleX(0)' }} />
         </div>
         <span ref={tc} className="font-script text-xs tabular-nums text-paper/50">
           00:00:00:00

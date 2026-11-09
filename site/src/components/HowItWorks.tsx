@@ -6,7 +6,7 @@ import type { Cut, ModelId, Reference, Take } from '../data/types';
 import { useTypewriter } from '../lib/hooks';
 import { pad2 } from '../lib/media';
 import { ShotIcon } from './ShotIcon';
-import { Chip, EASE, ModelToggle, PlaceholderBadge, RevealWords, SearchIcon, SectionTag, Stamp } from './ui';
+import { autoPhrases, Chip, EASE, ModelToggle, Phrases, PlaceholderBadge, RevealWords, SearchIcon, SectionTag, Stamp } from './ui';
 import { Video } from './Video';
 
 const STEPS = ['Intent search', 'Direction breakdown', 'Reference → recipe'];
@@ -65,16 +65,16 @@ export function HowItWorks() {
     <section id="how" className="relative py-28 md:py-40">
       <div className="mx-auto max-w-[1400px] px-5 md:px-8">
         <SectionTag n="03" label="How it works" />
-        <div className="mt-5 flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
-          <h2 className="display max-w-[13ch] text-[clamp(2.4rem,5.4vw,5rem)]">
-            <RevealWords text="From a sentence to shots." />
+        <div className="mt-5 flex flex-col justify-between gap-8 xl:flex-row xl:items-end">
+          <h2 className="display text-[clamp(2.4rem,5.4vw,5rem)]">
+            <RevealWords text={'From a sentence\nto shots.'} />
           </h2>
-          <ol className="grid gap-3 sm:grid-cols-3 lg:w-[36rem]">
+          <ol className="grid gap-3 sm:grid-cols-3 xl:w-[36rem]">
             {STEPS.map((t, i) => (
               <li
                 key={t}
                 className={`border-t pt-3 transition-colors duration-500 ${
-                  phase > 0 && i <= active ? 'border-crimson text-paper' : 'border-paper/15 text-paper/45'
+                  phase > 0 && i <= active ? 'border-brand-400 text-paper' : 'border-paper/15 text-paper/45'
                 }`}
               >
                 <span className="font-script text-xs">{pad2(i + 1)}</span>
@@ -84,7 +84,10 @@ export function HowItWorks() {
           </ol>
         </div>
 
-        <div ref={windowRef} className="mt-14 overflow-hidden rounded-2xl bg-paper text-ink shadow-[0_60px_120px_-50px_rgba(0,0,0,0.9)]">
+        <div
+          ref={windowRef}
+          className="surface-light mt-14 overflow-hidden rounded-2xl bg-mist text-ink shadow-[0_60px_140px_-60px_rgba(123,31,222,0.6)]"
+        >
           <div className="flex items-center gap-2 border-b border-ink/10 px-4 py-3">
             <span className="h-2.5 w-2.5 rounded-full bg-ink/15" />
             <span className="h-2.5 w-2.5 rounded-full bg-ink/15" />
@@ -103,7 +106,7 @@ export function HowItWorks() {
               </p>
               <span
                 className={`hidden rounded-full px-4 py-1.5 text-sm font-semibold transition-colors sm:inline ${
-                  phase >= 1 ? 'bg-ink text-paper' : 'bg-ink/10 text-ink/40'
+                  phase >= 1 ? 'bg-accent text-paper' : 'bg-ink/10 text-ink/40'
                 }`}
               >
                 Search
@@ -116,7 +119,7 @@ export function HowItWorks() {
                   key={x.id}
                   type="button"
                   onClick={() => restart(i)}
-                  className={`rounded-full px-3 py-1 transition-colors ${i === sid ? 'bg-ink text-paper' : 'bg-ink/6 text-ink/70 hover:bg-ink/10'}`}
+                  className={`rounded-full px-3 py-1 transition-colors ${i === sid ? 'bg-accent text-paper' : 'bg-ink/6 text-ink/70 hover:bg-ink/10'}`}
                 >
                   {x.title}
                 </button>
@@ -135,7 +138,7 @@ export function HowItWorks() {
                   exit={{ opacity: 0 }}
                   className="mt-8 flex items-center gap-3 text-sm text-ink/60"
                 >
-                  <span className="spinner text-crimson" />
+                  <span className="spinner text-accent" />
                   Reading the intent, then grouping scenes that create the same feeling…
                 </motion.div>
               )}
@@ -182,7 +185,9 @@ export function HowItWorks() {
                     ))}
                   </div>
                   <span className="label mt-6 block">Why it works</span>
-                  <p className="mt-2 font-serif text-[1.15rem] leading-snug">{chosen.why}</p>
+                  <p className="mt-2 font-serif text-[1.15rem] leading-snug">
+                    <Phrases text={autoPhrases(chosen.why)} />
+                  </p>
                 </div>
                 <div className="rounded-xl bg-white p-5 ring-1 ring-ink/10 lg:col-span-8">
                   <div className="flex items-center justify-between">
@@ -198,7 +203,7 @@ export function HowItWorks() {
                   </div>
                   <pre
                     data-lenis-prevent
-                    className="mt-4 max-h-44 overflow-auto whitespace-pre-wrap rounded-lg bg-paper p-4 font-script text-[0.8rem] leading-relaxed text-ink/80"
+                    className="mt-4 max-h-44 overflow-auto whitespace-pre-wrap rounded-lg bg-mist p-4 font-script text-[0.8rem] leading-relaxed text-ink/80"
                   >
                     {s.recipe.prompt}
                   </pre>
@@ -207,7 +212,7 @@ export function HowItWorks() {
                     <button
                       type="button"
                       onClick={copy}
-                      className="ml-auto rounded-full bg-ink px-4 py-2 text-sm font-semibold text-paper transition-transform active:scale-95"
+                      className="ml-auto rounded-full bg-accent px-4 py-2 text-sm font-semibold text-paper transition-transform active:scale-95"
                     >
                       {copied ? 'Copied ✓' : 'Copy prompt'}
                     </button>
@@ -230,7 +235,7 @@ function RefCard({ r, delay, picked, dim }: { r: Reference; delay: number; picke
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: dim ? 0.5 : 1, y: 0 }}
       transition={{ delay: dim ? 0 : delay, duration: 0.5, ease: EASE }}
-      className={`relative overflow-hidden rounded-xl bg-white ${picked ? 'ring-2 ring-crimson' : 'ring-1 ring-ink/10'}`}
+      className={`relative overflow-hidden rounded-xl bg-white ${picked ? 'ring-2 ring-accent' : 'ring-1 ring-ink/10'}`}
     >
       <div className="relative aspect-video bg-ink">
         <Video src={r.src} small />
@@ -239,7 +244,7 @@ function RefCard({ r, delay, picked, dim }: { r: Reference; delay: number; picke
             <motion.span
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="absolute left-2 top-2 rounded-full bg-crimson px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wider text-paper"
+              className="absolute left-2 top-2 rounded-full bg-accent px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wider text-paper"
             >
               Creator’s pick
             </motion.span>
@@ -267,7 +272,7 @@ function RefCard({ r, delay, picked, dim }: { r: Reference; delay: number; picke
 function CutCard({ c, i }: { c: Cut; i: number }) {
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 + i * 0.14, duration: 0.45, ease: EASE }}>
-      <div className="relative aspect-video overflow-hidden rounded-md bg-[#1f1f22] text-paper/30">
+      <div className="relative aspect-video overflow-hidden rounded-md bg-brand-950 text-paper/30">
         <ShotIcon size={c.size} />
         <span className="absolute left-1.5 top-1 font-script text-[0.6rem] text-paper/50">{pad2(i + 1)}</span>
       </div>
@@ -307,7 +312,7 @@ function ResultReveal({ chosen, result, model }: { chosen: Reference; result: Ta
           </figcaption>
         </figure>
         <figure>
-          <div className="relative aspect-video overflow-hidden rounded-xl bg-ink-3 ring-2 ring-paper/80">
+          <div className="relative aspect-video overflow-hidden rounded-xl bg-ink-3 ring-2 ring-brand-400">
             <Video key={result.src} src={result.src} />
             <Stamp kind="ok" delay={0.9} className="right-3 top-3 text-sm" />
           </div>

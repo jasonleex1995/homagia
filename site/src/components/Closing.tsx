@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { SCENARIOS } from '../data/scenarios';
 import { SITE } from '../data/site';
 import type { Reference } from '../data/types';
-import { RevealWords, SectionTag } from './ui';
+import { Phrases, RevealWords, SectionTag } from './ui';
 
 const PHASES = [
   {
@@ -36,8 +36,8 @@ export function Closing() {
       <section id="roadmap" className="border-t border-paper/10 py-28 md:py-36">
         <div className="mx-auto max-w-[1400px] px-5 md:px-8">
           <SectionTag n="07" label="Roadmap" />
-          <h2 className="display mt-5 max-w-[20ch] text-[clamp(2.2rem,4.6vw,4.2rem)]">
-            <RevealWords text="From a video MVP to a universal directing engine." />
+          <h2 className="display mt-5 text-[clamp(2.2rem,4.6vw,4.2rem)]">
+            <RevealWords text={'From a video MVP\nto a universal | directing engine.'} />
           </h2>
           <div className="mt-14 grid gap-px overflow-hidden rounded-2xl bg-paper/10 md:grid-cols-3">
             {PHASES.map((p, i) => (
@@ -47,7 +47,7 @@ export function Closing() {
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.12, duration: 0.6 }}
-                className="bg-ink p-7 md:p-9"
+                className="bg-ink-2 p-7 md:p-9"
               >
                 <span className="label">{p.k}</span>
                 <h3 className="mt-4 font-serif text-2xl font-semibold">{p.t}</h3>
@@ -64,7 +64,7 @@ export function Closing() {
           <h2 className="display mt-5 text-[clamp(2.2rem,4.6vw,4.2rem)]">Team Yonsei</h2>
           <div className="mt-12 grid gap-4 md:grid-cols-3">
             {SITE.team.map((m) => (
-              <div key={m.name} className="rounded-xl bg-paper p-6 text-ink">
+              <div key={m.name} className="surface-light rounded-xl bg-mist p-6 text-ink">
                 <p className="text-lg font-bold">{m.name}</p>
                 <p className="mt-1 text-ink/60">{m.role}</p>
               </div>
@@ -92,8 +92,7 @@ export function Closing() {
               ))}
             </ul>
             <p className="mt-4 max-w-md text-xs leading-relaxed text-paper/35">
-              Film excerpts are short references used for research and demonstration. All rights belong to their
-              respective owners.
+              <Phrases text="Film excerpts are short references | used for research and demonstration. | All rights belong to their respective owners." />
             </p>
           </div>
         </div>

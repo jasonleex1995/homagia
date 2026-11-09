@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { EASE, RevealWords, SectionTag } from './ui';
+import { EASE, Phrases, RevealWords, SectionTag } from './ui';
 
 // TODO: align these steps with the real pipeline (models, data, sizes).
 const NODES = [
@@ -17,11 +17,18 @@ export function Method() {
         <SectionTag n="04" label="Under the hood" />
         <div className="mt-5 grid gap-6 md:grid-cols-12 md:items-end">
           <h2 className="display text-[clamp(2.2rem,4.6vw,4.2rem)] md:col-span-7">
-            <RevealWords text="Search by feeling. Export as shots." />
+            <RevealWords text="Search by feeling." />
+            <br />
+            <span className="text-paper/40">
+              <RevealWords text="Export as shots." delay={0.2} />
+            </span>
           </h2>
           <p className="leading-relaxed text-paper/60 md:col-span-5">
-            Every scene in the library is broken down the way a director would describe it, then indexed by the emotion it
-            creates. That is what lets a plain sentence find the right reference.
+            <Phrases
+              text={
+                'Every scene in the library is broken down | the way a director would describe it, | then indexed by the emotion it creates.\nThat is what lets a plain sentence | find the right reference.'
+              }
+            />
           </p>
         </div>
         <div className="mt-16 grid gap-4 md:grid-cols-5">
@@ -34,7 +41,7 @@ export function Method() {
               transition={{ delay: i * 0.1, duration: 0.6, ease: EASE }}
               className="relative rounded-xl bg-ink-2 p-5 ring-1 ring-paper/10"
             >
-              <span className="grid h-9 w-9 place-items-center rounded-full bg-ink font-script text-sm text-crimson ring-1 ring-paper/20">
+              <span className="grid h-9 w-9 place-items-center rounded-full bg-ink font-script text-sm text-glow ring-1 ring-paper/20">
                 {String(i + 1).padStart(2, '0')}
               </span>
               <h3 className="mt-5 font-serif text-xl font-semibold">{n.t}</h3>
@@ -48,8 +55,7 @@ export function Method() {
           ))}
         </div>
         <p className="mt-8 font-serif italic text-paper/45">
-          Fig. 2 — How Homagia turns a sentence into shots. The examples on this page are precomputed, so the page runs
-          without a backend.
+          <Phrases text="Fig. 2 — How Homagia turns | a sentence into shots. | The examples on this page are precomputed, | so the page runs without a backend." />
         </p>
       </div>
     </section>
