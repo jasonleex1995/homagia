@@ -55,8 +55,6 @@ export interface Scenario {
     /** N GPT-refined prompts. prompts[i] produced takes[model][i]. */
     prompts: string[];
     takes: Record<ModelId, Take[]>;
-    /** Phrases the model ignored. They get struck through in the problem story. */
-    dropped?: string[];
   };
   references: Reference[];
   /** id of the reference the creator picked. */

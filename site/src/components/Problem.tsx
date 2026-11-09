@@ -1,22 +1,29 @@
 import { motion, useInView } from 'motion/react';
 import { useRef, useState } from 'react';
 import { SCENARIOS } from '../data/scenarios';
-import { MODEL_ORDER, MODELS } from '../data/site';
+import { MODEL_ORDER, modelName } from '../data/site';
 import type { BlockStat, ModelId, Take } from '../data/types';
 import { wordCount } from '../lib/media';
 import { Carousel, ModelPair, ScenarioTabs, takesAt } from './Stage';
 import { Counter, EASE, Phrases, SectionTag } from './ui';
 
 type Stats = Partial<Record<ModelId, BlockStat>> | undefined;
+type Takes = Record<ModelId, Take[]>;
 
-/** Attempts per model: the reported tries when a filter blocked some, else the takes we have. */
-const tries = (takes: Record<ModelId, Take[]>, stats: Stats) =>
-  MODEL_ORDER.reduce((a, m) => a + (stats?.[m]?.tries ?? takes[m].filter((t) => !t.blocked).length), 0);
-const blockedCount = (stats: Stats) => MODEL_ORDER.reduce((a, m) => a + (stats?.[m]?.blocked ?? 0), 0);
-const blockedNote = (stats: Stats) =>
+/** Attempts per model: the reported count when there is one, else every take we have, blocked ones included. */
+const tries = (takes: Takes, stats: Stats) => MODEL_ORDER.reduce((a, m) => a + (stats?.[m]?.tries ?? takes[m].length), 0);
+/** Attempts a content filter refused: the reported count when there is one, else the blocked takes. */
+const blockedCount = (takes: Takes, stats: Stats) =>
+  MODEL_ORDER.reduce((a, m) => a + (stats?.[m]?.blocked ?? takes[m].filter((t) => t.blocked).length), 0);
+/**
+ * Content-filter line for slide i. A reported tally covers every slide of a single
+ * prompt (plain); otherwise only the slide whose take was blocked says so (GPT v1–v4).
+ */
+const blockedNote = (takes: Takes, stats: Stats, i: number) =>
   MODEL_ORDER.flatMap((m) => {
     const b = stats?.[m];
-    return b ? [`${MODELS[m].label}’s content filter blocked ${b.blocked} of ${b.tries} attempts at this prompt.`] : [];
+    if (b) return [`${modelName(m)}’s content filter blocked ${b.blocked} of ${b.tries} attempts at this prompt.`];
+    return takes[m][i]?.blocked ? [`${modelName(m)}’s content filter blocked this attempt.`] : [];
   }).join(' ');
 
 /**
@@ -28,7 +35,7 @@ export function Problem({ sid, onScenario }: { sid: number; onScenario: (i: numb
   const plainCount = Math.max(1, ...MODEL_ORDER.map((m) => s.plain[m].length));
   const gptCount = Math.max(1, s.enhanced.prompts.length, ...MODEL_ORDER.map((m) => s.enhanced.takes[m].length));
   const total = tries(s.plain, s.plainBlocked) + tries(s.enhanced.takes, s.enhanced.blocked);
-  const blocked = blockedCount(s.plainBlocked) + blockedCount(s.enhanced.blocked);
+  const blocked = blockedCount(s.plain, s.plainBlocked) + blockedCount(s.enhanced.takes, s.enhanced.blocked);
 
   const tally = useRef<HTMLDivElement>(null);
   const tallyIn = useInView(tally, { once: true, margin: '0px 0px -15% 0px' });
@@ -53,6 +60,20 @@ export function Problem({ sid, onScenario }: { sid: number; onScenario: (i: numb
               }
             />
           </p>
+          {/* Current models, not old ones: say so up front. */}
+          <p className="mt-5 text-sm text-paper/50">
+            <span className="inline-block">Every take below comes from</span>{' '}
+            <span className="inline-block">
+              {MODEL_ORDER.map((m, k) => (
+                <span key={m}>
+                  {k > 0 && ' and '}
+                  <span className="whitespace-nowrap font-semibold text-paper/85">{modelName(m)}</span>
+                </span>
+              ))}
+              ,
+            </span>{' '}
+            <span className="inline-block">generated Nov 9, 2026.</span>
+          </p>
         </header>
 
         <div className="mt-10">
@@ -64,10 +85,10 @@ export function Problem({ sid, onScenario }: { sid: number; onScenario: (i: numb
             key={`plain-${s.id}`}
             count={plainCount}
             caption={(i) => (
-              <PromptCaption title="Plain prompt" text={s.query} counter={`Take ${i + 1} / ${plainCount}`} note={blockedNote(s.plainBlocked)} />
+              <PromptCaption title="Plain prompt" text={s.query} counter={`Take ${i + 1} / ${plainCount}`} note={blockedNote(s.plain, s.plainBlocked, i)} />
             )}
             slide={(i, live) => (
-              <ModelPair order={MODEL_ORDER} takes={takesAt(s.plain, MODEL_ORDER, i)} live={live} stats={s.plainBlocked} />
+              <ModelPair order={MODEL_ORDER} takes={takesAt(s.plain, MODEL_ORDER, i)} live={live} />
             )}
           />
           <Carousel
@@ -78,12 +99,11 @@ export function Problem({ sid, onScenario }: { sid: number; onScenario: (i: numb
                 title={`GPT-enhanced prompt v${i + 1}`}
                 text={s.enhanced.prompts[i] ?? ''}
                 counter={`v${i + 1} / ${gptCount}`}
-                dropped={s.enhanced.dropped}
-                note={blockedNote(s.enhanced.blocked)}
+                note={blockedNote(s.enhanced.takes, s.enhanced.blocked, i)}
               />
             )}
             slide={(i, live) => (
-              <ModelPair order={MODEL_ORDER} takes={takesAt(s.enhanced.takes, MODEL_ORDER, i)} live={live} stats={s.enhanced.blocked} />
+              <ModelPair order={MODEL_ORDER} takes={takesAt(s.enhanced.takes, MODEL_ORDER, i)} live={live} />
             )}
           />
         </div>
@@ -118,24 +138,21 @@ export function Problem({ sid, onScenario }: { sid: number; onScenario: (i: numb
   );
 }
 
-/** Prompt shown above a slide: label, word count, slide counter, and the prompt itself. */
+/** Prompt shown above a slide, word for word as it was run: label, word count, slide counter, prompt. */
 function PromptCaption({
   title,
   text,
   counter,
-  dropped = [],
   note = '',
 }: {
   title: string;
   text: string;
   counter: string;
-  dropped?: string[];
   /** e.g. how often a content filter refused this prompt. */
   note?: string;
 }) {
   const [open, setOpen] = useState(false);
   const long = text.length > 200;
-  const hasDropped = dropped.some((p) => text.toLowerCase().includes(p.toLowerCase()));
   return (
     <div>
       <div className="flex items-center justify-between gap-4">
@@ -150,7 +167,7 @@ function PromptCaption({
           long && !open ? 'line-clamp-4 md:line-clamp-none' : ''
         }`}
       >
-        “<Struck text={text} phrases={dropped} />”
+        “{text}”
       </p>
       {note && (
         <p className="mt-3 flex items-start gap-2 text-sm leading-snug text-paper/75">
@@ -161,39 +178,11 @@ function PromptCaption({
           <span>{note}</span>
         </p>
       )}
-      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
-        {hasDropped && (
-          <span className="text-xs text-paper/45">
-            <span className="line-through decoration-brand-400 decoration-2">Struck through</span>: details the model ignored
-          </span>
-        )}
-        {long && (
-          <button type="button" onClick={() => setOpen((o) => !o)} className="text-xs text-paper/50 transition-colors hover:text-paper md:hidden">
-            {open ? 'Show less' : 'Show full prompt'}
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/** Strikes through the phrases the model ignored. */
-function Struck({ text, phrases }: { text: string; phrases: string[] }) {
-  if (!phrases.length) return <>{text}</>;
-  const escaped = phrases.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-  const parts = text.split(new RegExp(`(${escaped.join('|')})`, 'gi'));
-  const lower = phrases.map((p) => p.toLowerCase());
-  return (
-    <>
-      {parts.map((p, i) =>
-        lower.includes(p.toLowerCase()) ? (
-          <span key={i} className="bg-paper/8 line-through decoration-brand-400 decoration-2">
-            {p}
-          </span>
-        ) : (
-          <span key={i}>{p}</span>
-        ),
+      {long && (
+        <button type="button" onClick={() => setOpen((o) => !o)} className="mt-2 text-xs text-paper/50 transition-colors hover:text-paper md:hidden">
+          {open ? 'Show less' : 'Show full prompt'}
+        </button>
       )}
-    </>
+    </div>
   );
 }

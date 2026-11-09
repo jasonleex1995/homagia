@@ -3,27 +3,25 @@ import type { ModelId, Scenario, Take } from './types';
 /* ---------------------------------------------------------------------------
  * Scenario data. Media paths are relative to site/public/media/.
  *
- * Real: scenario 1's prompt, its four reference clips, the creator's pick, and
- * the plain-prompt takes. Still placeholder: the GPT-enhanced and Homagia
- * takes, the GPT-enhanced prompt text, and the recipe. Swap them in when they
- * arrive, then remove `placeholder: true`.
+ * Real: scenario 1's prompt, its four reference clips, the creator's pick, the
+ * plain-prompt takes, and the four GPT-enhanced prompts with their takes. Still
+ * placeholder: the Homagia takes and the recipe. Swap them in when they arrive,
+ * then remove `placeholder: true`.
  * ------------------------------------------------------------------------- */
 const PH = '_placeholder';
-const N = 4;
 
-const placeholderTakes = (kind: 'plain' | 'gpt'): Record<ModelId, Take[]> => {
-  const make = (): Take[] =>
-    Array.from({ length: N }, (_, i) => ({ src: `${PH}/${kind}-${i + 1}.mp4`, verdict: 'ng' as const }));
-  return { kling: make(), seedance: make() };
-};
 const placeholderOurs = (): Record<ModelId, Take[]> => ({
   kling: [{ src: `${PH}/ours-1.mp4`, verdict: 'ok' }],
   seedance: [{ src: `${PH}/ours-2.mp4`, verdict: 'ok' }],
 });
 
-// DRAFT: stands in for the real GPT-enhanced prompts (v1–v4).
-const GPT_DRAFT =
-  'A cinematic, emotionally rich 4K scene of a man expressing his love to a woman in an indirect, romantic, and tasteful way. On a quiet evening street softly lit by warm string lights, he hesitates before finding the courage to show his feelings through a meaningful gesture instead of words. Their eyes meet, and the moment is filled with longing, tenderness, and unspoken emotion. Shallow depth of field, gentle camera movement, golden-hour lighting, soft romantic color grading, subtle facial expressions, inspired by classic romance films, photorealistic, award-winning cinematography.';
+// The four rewrites GPT produced from the plain prompt, run as-is on both models.
+const GPT_PROMPTS = [
+  'A cinematic scene of a man subtly expressing his romantic feelings toward a woman without directly confessing his love. His affection is conveyed through natural actions, subtle gestures, and meaningful interactions. Realistic human behavior, emotional storytelling, natural lighting, and cinematic camera movements. No dialogue, no sexual content.',
+  'A man notices that a woman is feeling cold while they walk together on a quiet evening street. Without saying anything, he gently takes off his jacket and places it over her shoulders. She looks at him with a small smile. He smiles back shyly. A subtle romantic moment, cinematic medium shot, natural movements, warm street lighting, realistic film style.',
+  "A man gently places his headphones over a woman's ears so she can listen to his favorite song. He watches her reaction with a shy, affectionate smile. She looks at him and smiles softly. A quiet, romantic moment filled with unspoken affection. Cinematic close-up shots, warm natural lighting, realistic movements, no dialogue.",
+  'Create a cinematic scene in which a man expresses his love to a woman in an indirect, romantic, non-sexual way. Show his feelings through subtle actions, gestures, and body language rather than dialogue. Use natural lighting and realistic human interactions.',
+];
 
 export const SCENARIOS: Scenario[] = [
   {
@@ -41,9 +39,17 @@ export const SCENARIOS: Scenario[] = [
     // Seedance's content filter refused 6 of 10 attempts at this exact prompt.
     plainBlocked: { seedance: { blocked: 6, tries: 10 } },
     enhanced: {
-      prompts: Array.from({ length: N }, () => GPT_DRAFT),
-      takes: placeholderTakes('gpt'),
-      dropped: ['through a meaningful gesture instead of words', 'unspoken emotion'],
+      prompts: GPT_PROMPTS,
+      // Take i is prompt v(i+1), generated once per model. Seedance refused v3.
+      takes: {
+        kling: [1, 2, 3, 4].map((i) => ({ src: `s1/gpt/kling-${i}.mp4`, verdict: 'ng' as const })),
+        seedance: [
+          { src: 's1/gpt/seedance-1.mp4', verdict: 'ng' },
+          { src: 's1/gpt/seedance-2.mp4', verdict: 'ng' },
+          { src: 's1/gpt/seedance-3-blocked.png', blocked: true },
+          { src: 's1/gpt/seedance-4.mp4', verdict: 'ng' },
+        ],
+      },
     },
     references: [
       {

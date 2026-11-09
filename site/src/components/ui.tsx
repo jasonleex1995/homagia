@@ -102,19 +102,31 @@ export function Chip({ children, tone = 'dark', className = '' }: { children: Re
   );
 }
 
-/** Film-set verdict stamp: NG (no good) or OK (keeper). */
-export function Stamp({ kind, delay = 0, className = '' }: { kind: 'ng' | 'ok'; delay?: number; className?: string }) {
-  const ng = kind === 'ng';
+const STAMPS = {
+  /** The creator watched it: not the scene they pictured. */
+  ng: { label: 'NOT IT', icon: 'M6 6l12 12M18 6 6 18' },
+  /** The model refused to render it at all. */
+  blocked: { label: 'BLOCKED', icon: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM5.6 5.6l12.8 12.8' },
+  /** The take the creator keeps. */
+  ok: { label: 'THIS ONE', icon: 'm5 12 5 5 9-10' },
+} as const;
+
+/** The verdict on a take, stamped in its corner. */
+export function Stamp({ kind, delay = 0, className = '' }: { kind: keyof typeof STAMPS; delay?: number; className?: string }) {
+  const ok = kind === 'ok';
   return (
     <motion.span
-      initial={{ scale: 2.2, opacity: 0, rotate: ng ? -18 : -10 }}
-      animate={{ scale: 1, opacity: 1, rotate: ng ? -9 : -5 }}
+      initial={{ scale: 2.2, opacity: 0, rotate: ok ? -8 : -14 }}
+      animate={{ scale: 1, opacity: 1, rotate: ok ? -4 : -6 }}
       transition={{ delay, type: 'spring', stiffness: 520, damping: 20 }}
-      className={`pointer-events-none absolute z-10 inline-block rounded-[3px] border-2 px-1.5 py-px font-script text-[0.72rem] font-bold tracking-[0.18em] ${
-        ng ? 'border-paper/55 bg-ink/60 text-paper/75' : 'border-accent bg-accent text-paper'
+      className={`pointer-events-none absolute z-10 inline-flex items-center gap-1 whitespace-nowrap rounded-[3px] border-2 px-1.5 py-px font-script text-[0.68rem] font-bold tracking-[0.14em] md:text-[0.72rem] ${
+        ok ? 'border-accent bg-accent text-paper' : 'border-paper/55 bg-ink/60 text-paper/80'
       } ${className}`}
     >
-      {ng ? 'NG' : 'OK'}
+      <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d={STAMPS[kind].icon} />
+      </svg>
+      {STAMPS[kind].label}
     </motion.span>
   );
 }

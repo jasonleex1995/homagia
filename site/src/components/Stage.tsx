@@ -1,8 +1,8 @@
 import { AnimatePresence, motion, useInView } from 'motion/react';
 import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { SCENARIOS } from '../data/scenarios';
-import { MODELS } from '../data/site';
-import type { BlockStat, ModelId, Take } from '../data/types';
+import { modelName } from '../data/site';
+import type { ModelId, Take } from '../data/types';
 import { media, pad2 } from '../lib/media';
 import { EASE, PlaceholderBadge, Stamp } from './ui';
 import { Video } from './Video';
@@ -152,37 +152,33 @@ export function ModelPair({
   takes,
   live,
   glow = false,
-  stats,
 }: {
   order: ModelId[];
   takes: Partial<Record<ModelId, Take>>;
   live: boolean;
   glow?: boolean;
-  /** Content-filter refusals per model, shown on blocked attempts. */
-  stats?: Partial<Record<ModelId, BlockStat>>;
 }) {
   return (
     <div className="grid grid-cols-2 gap-2 md:gap-4">
       {order.map((m) => {
         const t = takes[m];
+        const stamp = t?.blocked ? 'blocked' : t?.verdict;
         return (
           <div
             key={m}
             className={`relative aspect-video overflow-hidden rounded-xl bg-ink ${glow ? 'ring-2 ring-brand-400' : 'ring-1 ring-paper/10'}`}
           >
             {t?.blocked ? (
-              <BlockedTile src={t.src} model={MODELS[m].label} stat={stats?.[m]} />
+              <BlockedTile src={t.src} model={modelName(m)} />
             ) : t ? (
               <Video src={t.src} />
             ) : (
               <div className="hud grid h-full place-items-center">No take</div>
             )}
             <span className="absolute left-2 top-2 rounded-full bg-ink/65 px-2.5 py-1 text-[0.7rem] font-semibold text-paper backdrop-blur md:left-3 md:top-3 md:text-xs">
-              {MODELS[m].label}
+              {modelName(m)}
             </span>
-            {live && t?.verdict && !t.blocked && (
-              <Stamp kind={t.verdict} delay={0.35} className="bottom-2 right-2 md:bottom-3 md:right-3" />
-            )}
+            {live && stamp && <Stamp kind={stamp} delay={0.35} className="bottom-2 right-2 md:bottom-3 md:right-3" />}
           </div>
         );
       })}
@@ -190,24 +186,18 @@ export function ModelPair({
   );
 }
 
-/** An attempt the model refused to render: what happened, how often, and the real error screen. */
-function BlockedTile({ src, model, stat }: { src: string; model: string; stat?: BlockStat }) {
+/**
+ * An attempt the model refused to render: the real error screen, as tall as the
+ * tile allows. The tile tops out at 632×356, so the 408×336 capture never upscales.
+ */
+function BlockedTile({ src, model }: { src: string; model: string }) {
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-1.5 bg-[#0c0c0e] px-3 text-center md:gap-2.5 md:px-8">
-      <span className="rounded-[3px] border-2 border-paper/50 px-1.5 py-px font-script text-[0.6rem] font-bold tracking-[0.18em] text-paper/80 md:text-[0.72rem]">
-        BLOCKED
-      </span>
-      <p className="font-serif text-[clamp(0.8rem,1.5vw,1.3rem)] leading-tight text-paper">The content filter refused it</p>
-      {stat && (
-        <p className="hidden text-[clamp(0.62rem,0.95vw,0.85rem)] leading-snug text-paper/60 sm:block">
-          {stat.blocked} of {stat.tries} {model} attempts never rendered
-        </p>
-      )}
+    <div className="flex h-full items-center justify-center bg-[#0c0c0e]">
       <img
         src={media(src)}
         alt={`${model} error screen: the output was flagged as sensitive content`}
         loading="lazy"
-        className="mt-1 hidden max-h-[38%] rounded-md ring-1 ring-paper/15 md:block"
+        className="h-[90%] w-auto rounded-md ring-1 ring-paper/15 md:rounded-lg"
       />
     </div>
   );
