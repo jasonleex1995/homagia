@@ -14,6 +14,14 @@ import { Video } from './Video';
 
 /** Scenario switcher. Problem and Solution share the same state. */
 export function ScenarioTabs({ sid, onChange }: { sid: number; onChange: (i: number) => void }) {
+  // With a single scenario there is nothing to switch; keep only the badge.
+  if (SCENARIOS.length < 2) {
+    return SCENARIOS[0]?.placeholder ? (
+      <div className="flex justify-center">
+        <PlaceholderBadge show />
+      </div>
+    ) : null;
+  }
   return (
     <div className="flex flex-wrap items-center justify-center gap-2">
       {SCENARIOS.map((x, i) => (

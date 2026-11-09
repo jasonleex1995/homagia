@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { useMemo } from 'react';
-import { SCENARIOS } from '../data/scenarios';
+import { isRealClip, SCENARIOS } from '../data/scenarios';
 import { SITE } from '../data/site';
 import type { Reference } from '../data/types';
 import { Phrases, RevealWords, SectionTag } from './ui';
@@ -27,7 +27,8 @@ const PHASES = [
 export function Closing() {
   const films = useMemo(() => {
     const seen = new Map<string, Reference>();
-    for (const s of SCENARIOS) for (const r of s.references) if (!seen.has(r.film)) seen.set(r.film, r);
+    // Credit only the films whose footage actually appears on the page.
+    for (const s of SCENARIOS) for (const r of s.references) if (isRealClip(r.src) && !seen.has(r.film)) seen.set(r.film, r);
     return [...seen.values()];
   }, []);
 

@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
-import { SCENARIOS } from '../data/scenarios';
+import { isRealClip, SCENARIOS } from '../data/scenarios';
 import { SITE } from '../data/site';
 import { media, posterOf } from '../lib/media';
 import { EASE, Phrases } from './ui';
@@ -33,10 +33,12 @@ export function Hero() {
   const section = useRef<HTMLElement>(null);
   const shift = useLetterbox(section);
 
-  // One clip per film, cycling behind the title.
+  // One clip per film, cycling behind the title. Real footage only, once there is some.
   const reel = useMemo(() => {
     const seen = new Set<string>();
-    return SCENARIOS.flatMap((s) => s.references)
+    const all = SCENARIOS.flatMap((s) => s.references);
+    const real = all.filter((r) => isRealClip(r.src));
+    return (real.length ? real : all)
       .filter((r) => (seen.has(r.film) ? false : (seen.add(r.film), true)))
       .map((r) => ({ src: r.src, credit: `${r.film}${r.year ? ` (${r.year})` : ''}` }));
   }, []);

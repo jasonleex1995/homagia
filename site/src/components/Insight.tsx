@@ -7,7 +7,7 @@ import { Video } from './Video';
 export function Insight() {
   const s = SCENARIOS.find((x) => x.keywords) ?? SCENARIOS[0];
   const kw = s.keywords ?? { terms: [], hits: [] };
-  const techniques = s.references.flatMap((r) => r.chips).slice(0, 4);
+  const techniques = s.references.map((r) => r.chips[0]).filter(Boolean).slice(0, 4);
   const card = {
     initial: { opacity: 0, y: 20 },
     whileInView: { opacity: 1, y: 0 },
@@ -70,7 +70,7 @@ export function Insight() {
                 </Chip>
               ))}
             </div>
-            <div className="mt-5 grid grid-cols-3 gap-3">
+            <div className="mt-5 grid gap-3" style={{ gridTemplateColumns: `repeat(${Math.min(s.references.length, 4)}, minmax(0, 1fr))` }}>
               {s.references.map((r) => (
                 <div key={r.id}>
                   <div className="aspect-video overflow-hidden rounded-md bg-ink">
