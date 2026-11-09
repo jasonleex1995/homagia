@@ -1,19 +1,14 @@
-import type { ModelId, Scenario, Take } from './types';
+import type { Scenario } from './types';
 
 /* ---------------------------------------------------------------------------
  * Scenario data. Media paths are relative to site/public/media/.
  *
- * Real: scenario 1's prompt, its four reference clips, the creator's pick, the
- * plain-prompt takes, and the four GPT-enhanced prompts with their takes. Still
- * placeholder: the Homagia takes and the recipe. Swap them in when they arrive,
- * then remove `placeholder: true`.
+ * Scenario 1 is all real: the prompt, the plain and GPT-enhanced takes, the
+ * four reference clips, the creator's pick, and the Homagia recipe with its
+ * render. A new scenario can start from placeholder clips under `_placeholder/`
+ * with `placeholder: true`, which shows a badge until the real ones land.
  * ------------------------------------------------------------------------- */
 const PH = '_placeholder';
-
-const placeholderOurs = (): Record<ModelId, Take[]> => ({
-  kling: [{ src: `${PH}/ours-1.mp4`, verdict: 'ok' }],
-  seedance: [{ src: `${PH}/ours-2.mp4`, verdict: 'ok' }],
-});
 
 // The four rewrites GPT produced from the plain prompt, run as-is on both models.
 const GPT_PROMPTS = [
@@ -27,7 +22,6 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'the-confession',
     title: 'The Confession',
-    placeholder: true,
     query: 'A man expresses his love to a woman in an indirect, romantic, non-sexual way',
     plain: {
       kling: [1, 2, 3, 4].map((i) => ({ src: `s1/plain/kling-${i}.mp4`, verdict: 'ng' as const })),
@@ -95,22 +89,30 @@ export const SCENARIOS: Scenario[] = [
       },
     ],
     chosen: 'love-actually',
-    // DRAFT: replace with the recipe prompt actually used for the Homagia takes.
+    // The recipe Homagia wrote from the Love Actually scene, run as-is on Seedance.
     recipe: {
       cuts: [
-        { size: 'medium', shot: 'Medium', seconds: 3, desc: 'Night. He waits at her door under warm string lights, holding a stack of cards' },
-        { size: 'close', shot: 'Close-up', seconds: 2, desc: 'He turns a handwritten card toward her without a word' },
-        { size: 'close', shot: 'Close-up', seconds: 3, desc: 'Her face in the doorway, eyes soft, holding back a smile' },
-        { size: 'wide', shot: 'Wide', seconds: 2, desc: 'He nods once and walks away down the quiet street' },
+        { size: 'medium', shot: 'Medium', seconds: 3, desc: 'He holds a stack of sketchbook pages and smiles shyly' },
+        { size: 'close', shot: 'Close-up', seconds: 2, desc: 'He turns a page: two hand-drawn snowmen side by side' },
+        { size: 'close', shot: 'Close-up', seconds: 3, desc: 'She looks surprised, then softens into a warm smile' },
+        { size: 'wide', shot: 'Wide', seconds: 2, desc: 'He gives a small nod, turns, and walks away' },
       ],
       prompt: [
-        'Cut 1 — Medium, 3s. Night. A man waits at a front door framed by warm string lights, holding a stack of handwritten cards. Static camera.',
-        'Cut 2 — Over-the-shoulder close-up, 2s. He turns one card toward her. He does not speak.',
-        'Cut 3 — Close-up, 3s. The woman in the doorway reads it, eyes soft, holding back a smile. Quiet.',
-        'Cut 4 — Wide, 2s. He gives a small nod, turns, and walks away down the empty street.',
-      ].join('\n'),
+        'Winter evening on a quiet snowy street. A front door with a warm porch light and soft string lights. Cinematic, realistic, 35mm film look.',
+        'A young man in a dark wool coat and a young woman in a cream knit sweater.',
+        '[0-3s] Medium shot, static camera. The door opens and warm light falls on the man. He holds a stack of large sketchbook pages and smiles shyly.',
+        '[3-5s] Close-up on the sketchbook. He turns a page: a simple hand-drawn picture of two snowmen standing side by side under falling snow.',
+        '[5-8s] Close-up on the woman in the doorway. She looks surprised, then her expression softens into a gentle, warm smile.',
+        '[8-10s] Wide shot, static camera. He gives a small nod, turns, and walks away down the snowy street. She stays in the doorway, watching him go.',
+        'Sound: soft piano, light wind, footsteps in snow, a page turning.',
+        'Mood: sweet, heartfelt, calm. Slow pacing. The man stays silent the whole time.',
+      ].join('\n\n'),
     },
-    ours: placeholderOurs(),
+    // One render so far: Seedance 2.5, which the creator keeps.
+    ours: {
+      kling: [],
+      seedance: [{ src: 's1/ours/seedance-1.mp4', verdict: 'ok' }],
+    },
     keywords: {
       terms: ['man', 'woman', 'love'],
       hits: ['couple kissing', 'wedding proposal', 'man and woman hugging'],

@@ -159,29 +159,40 @@ export function ModelPair({
   glow?: boolean;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-2 md:gap-4">
-      {order.map((m) => {
-        const t = takes[m];
-        const stamp = t?.blocked ? 'blocked' : t?.verdict;
-        return (
-          <div
-            key={m}
-            className={`relative aspect-video overflow-hidden rounded-xl bg-ink ${glow ? 'ring-2 ring-brand-400' : 'ring-1 ring-paper/10'}`}
-          >
-            {t?.blocked ? (
-              <BlockedTile src={t.src} model={modelName(m)} />
-            ) : t ? (
-              <Video src={t.src} />
-            ) : (
-              <div className="hud grid h-full place-items-center">No take</div>
-            )}
-            <span className="absolute left-2 top-2 rounded-full bg-ink/65 px-2.5 py-1 text-[0.7rem] font-semibold text-paper backdrop-blur md:left-3 md:top-3 md:text-xs">
-              {modelName(m)}
-            </span>
-            {live && stamp && <Stamp kind={stamp} delay={0.35} className="bottom-2 right-2 md:bottom-3 md:right-3" />}
-          </div>
-        );
-      })}
+    <TilePair>
+      {order.map((m) => (
+        <Tile key={m} take={takes[m]} label={modelName(m)} live={live} glow={glow} />
+      ))}
+    </TilePair>
+  );
+}
+
+/** Two tiles side by side: the layout of every stage slide. */
+export function TilePair({ children }: { children: ReactNode }) {
+  return <div className="grid grid-cols-2 gap-2 md:gap-4">{children}</div>;
+}
+
+/**
+ * One 16:9 tile: the clip (or a blocked attempt's error screen), a label pill,
+ * and the verdict stamp once the slide is live. `detail` joins the label from
+ * tablet width up, where there is room for it.
+ */
+export function Tile({ take, label, detail, live, glow = false }: { take?: Take; label: string; detail?: string; live: boolean; glow?: boolean }) {
+  const stamp = take?.blocked ? 'blocked' : take?.verdict;
+  return (
+    <div className={`relative aspect-video overflow-hidden rounded-xl bg-ink ${glow ? 'ring-2 ring-brand-400' : 'ring-1 ring-paper/10'}`}>
+      {take?.blocked ? (
+        <BlockedTile src={take.src} model={label} />
+      ) : take ? (
+        <Video src={take.src} />
+      ) : (
+        <div className="hud grid h-full place-items-center">No take</div>
+      )}
+      <span className="absolute left-2 top-2 rounded-full bg-ink/65 px-2.5 py-1 text-[0.7rem] font-semibold text-paper backdrop-blur md:left-3 md:top-3 md:text-xs">
+        {label}
+        {detail && <span className="hidden font-normal text-paper/75 md:inline"> · {detail}</span>}
+      </span>
+      {live && stamp && <Stamp kind={stamp} delay={0.35} className="bottom-2 right-2 md:bottom-3 md:right-3" />}
     </div>
   );
 }

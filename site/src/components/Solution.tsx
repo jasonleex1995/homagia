@@ -1,17 +1,17 @@
 import { useState } from 'react';
 import { SCENARIOS } from '../data/scenarios';
-import { MODEL_ORDER } from '../data/site';
-import type { Reference, Scenario } from '../data/types';
+import { MODEL_ORDER, modelName } from '../data/site';
+import type { ModelId, Reference, Scenario, Take } from '../data/types';
 import { wordCount } from '../lib/media';
 import { ShotIcon } from './ShotIcon';
-import { Carousel, ModelPair, ScenarioTabs, takesAt } from './Stage';
+import { Carousel, ModelPair, ScenarioTabs, takesAt, Tile, TilePair } from './Stage';
 import { autoPhrases, Chip, Phrases, RevealWords, SectionTag } from './ui';
 import { Video } from './Video';
 
 /**
  * Homagia on the same stage as the problem: the references it found for the
  * same sentence, then the creator's pick turned into a recipe and rendered on
- * the same two models.
+ * the same models.
  */
 export function Solution({ sid, onScenario }: { sid: number; onScenario: (i: number) => void }) {
   const s = SCENARIOS[sid];
@@ -62,11 +62,27 @@ export function Solution({ sid, onScenario }: { sid: number; onScenario: (i: num
             accent
             count={oursCount}
             caption={(i) => <RecipeCaption recipe={s.recipe} from={chosen} counter={oursCount > 1 ? `Take ${i + 1} / ${oursCount}` : ''} />}
-            slide={(i, live) => <ModelPair order={MODEL_ORDER} takes={takesAt(s.ours, MODEL_ORDER, i)} live={live} glow />}
+            slide={(i, live) => <ResultSlide takes={takesAt(s.ours, MODEL_ORDER, i)} reference={chosen} live={live} />}
           />
         </div>
       </div>
     </section>
+  );
+}
+
+/**
+ * The recipe, rendered. With a take from both models it is the same pair as the
+ * problem; with one, the result sits beside the scene it was directed from.
+ */
+function ResultSlide({ takes, reference, live }: { takes: Partial<Record<ModelId, Take>>; reference: Reference; live: boolean }) {
+  const made = MODEL_ORDER.filter((m) => takes[m]);
+  if (made.length !== 1) return <ModelPair order={MODEL_ORDER} takes={takes} live={live} glow />;
+  const m = made[0];
+  return (
+    <TilePair>
+      <Tile take={{ src: reference.src }} label="Reference" detail={reference.film} live={live} />
+      <Tile take={takes[m]} label={modelName(m)} live={live} glow />
+    </TilePair>
   );
 }
 
@@ -144,9 +160,10 @@ function RecipeCaption({ recipe, from, counter }: { recipe: Scenario['recipe']; 
         </div>
         <span className="shrink-0 font-script text-xs text-paper/50">{counter}</span>
       </div>
-      <div className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3">
+      {/* Phones stack icon over text; four across only once each cut has room for its line. */}
+      <div className="mt-4 grid grid-cols-2 gap-2 md:gap-3 xl:grid-cols-4">
         {recipe.cuts.map((c, k) => (
-          <div key={k} className="flex items-center gap-3 rounded-xl bg-paper/5 p-2 ring-1 ring-paper/10">
+          <div key={k} className="flex flex-col items-start gap-2 rounded-xl bg-paper/5 p-2.5 ring-1 ring-paper/10 sm:flex-row sm:items-center sm:gap-3 sm:p-2">
             <div className="relative aspect-video w-14 shrink-0 overflow-hidden rounded-md bg-ink text-paper/35 md:w-20">
               <ShotIcon size={c.size} />
             </div>
@@ -154,7 +171,7 @@ function RecipeCaption({ recipe, from, counter }: { recipe: Scenario['recipe']; 
               <p className="text-sm font-semibold">
                 {c.shot} · {c.seconds}s
               </p>
-              <p className="line-clamp-2 text-xs leading-snug text-paper/55">{c.desc}</p>
+              <p className="text-xs leading-snug text-paper/55">{c.desc}</p>
             </div>
           </div>
         ))}
