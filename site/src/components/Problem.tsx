@@ -1,39 +1,20 @@
 import { motion, useInView } from 'motion/react';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { SCENARIOS, STORY_MODEL } from '../data/scenarios';
-import { MODELS } from '../data/site';
-import type { Take } from '../data/types';
-import { useTypewriter } from '../lib/hooks';
+import { useRef, useState } from 'react';
+import { SCENARIOS } from '../data/scenarios';
+import { MODEL_ORDER } from '../data/site';
 import { wordCount } from '../lib/media';
-import { TakeTile } from './Takes';
+import { Carousel, ModelPair, ScenarioTabs, takesAt } from './Stage';
 import { Counter, EASE, Phrases, SectionTag } from './ui';
 
 /**
- * The two ways creators prompt today, side by side: a plain sentence and a
- * GPT-enhanced prompt. Both end in rerolls. Uses the first scenario and one model.
+ * Today's workflow, as two stages: the plain prompt rerolled N times, and N
+ * GPT-enhanced rewrites. Every slide shows Kling and Seedance side by side.
  */
-export function Problem() {
-  const s = SCENARIOS[0];
-  const modelName = MODELS[STORY_MODEL].label;
-  const plain = s.plain[STORY_MODEL];
-  const gpt = s.enhanced.takes[STORY_MODEL];
-  const gptPrompt = s.enhanced.prompts[0] ?? '';
-  const dropped = s.enhanced.dropped ?? [];
-  const plainWords = wordCount(s.query);
-  const gptWords = wordCount(gptPrompt);
-  const total = plain.length + gpt.length;
-
-  const pair = useRef<HTMLDivElement>(null);
-  const inView = useInView(pair, { once: true, margin: '0px 0px -25% 0px' });
-  const { typed, done } = useTypewriter(s.query, inView);
-
-  // Strike the ignored phrases a beat after the panels appear.
-  const [strike, setStrike] = useState(false);
-  useEffect(() => {
-    if (!inView) return;
-    const t = window.setTimeout(() => setStrike(true), 1800);
-    return () => window.clearTimeout(t);
-  }, [inView]);
+export function Problem({ sid, onScenario }: { sid: number; onScenario: (i: number) => void }) {
+  const s = SCENARIOS[sid];
+  const plainCount = Math.max(1, ...MODEL_ORDER.map((m) => s.plain[m].length));
+  const gptCount = Math.max(1, s.enhanced.prompts.length, ...MODEL_ORDER.map((m) => s.enhanced.takes[m].length));
+  const total = MODEL_ORDER.reduce((a, m) => a + s.plain[m].length + s.enhanced.takes[m].length, 0);
 
   const tally = useRef<HTMLDivElement>(null);
   const tallyIn = useInView(tally, { once: true, margin: '0px 0px -15% 0px' });
@@ -41,61 +22,49 @@ export function Problem() {
   return (
     <section id="problem" className="relative py-28 md:py-40">
       <div className="mx-auto max-w-[1400px] px-5 md:px-8">
-        <SectionTag n="01" label="The problem" />
-        {/* One line per sentence on desktop; on phones each sentence gets its own line. */}
-        <h2 className="display mt-5 text-[clamp(1.9rem,3.9vw,3.6rem)]">
-          <Phrases text="You can picture | the shot." />{' '}
-          <br className="md:hidden" />
-          <span className="text-paper/40">
-            <Phrases text="You can’t | prompt it." />
-          </span>
-        </h2>
-        <p className="mt-6 max-w-3xl text-lg leading-relaxed text-paper/60">
-          <Phrases
-            text={
-              'Creators can see the scene | in their head.\nToday there are two common ways | to ask a model for it, | and both end in rerolls.'
-            }
-          />
-        </p>
+        <header className="text-center">
+          <SectionTag n="01" label="The problem" center />
+          {/* One line per sentence on desktop; on phones each sentence gets its own line. */}
+          <h2 className="display mt-5 text-[clamp(1.9rem,3.9vw,3.6rem)]">
+            <Phrases text="You can picture | the shot." />{' '}
+            <br className="md:hidden" />
+            <span className="text-paper/40">
+              <Phrases text="You can’t | prompt it." />
+            </span>
+          </h2>
+          <p className="mx-auto mt-6 max-w-3xl text-lg leading-relaxed text-paper/60">
+            <Phrases
+              text={
+                'Creators can see the scene | in their head.\nToday there are two common ways | to ask a model for it, | and both end in rerolls.'
+              }
+            />
+          </p>
+        </header>
 
-        <div ref={pair} className="mt-12 grid gap-5 md:mt-16 lg:grid-cols-2">
-          <Approach
-            n="01"
-            title="Plain prompt"
-            note={'Type the feeling | the way you would say it to a friend.\nThen reroll, again and again.'}
-            takes={plain}
-            model={modelName}
-            words={plainWords}
-            show={inView}
-            delay={0}
-          >
-            <p className="font-script text-[clamp(1rem,1.3vw,1.15rem)] leading-relaxed">
-              “{typed}
-              {!done && <span className="caret" />}
-              {done && '”'}
-            </p>
-          </Approach>
-          <Approach
-            n="02"
-            title="GPT-enhanced prompt"
-            note={'Ask GPT to make it more cinematic.\nThe details that carried the feeling | get dropped or misread.'}
-            takes={gpt}
-            model={modelName}
-            words={gptWords}
-            badge={`${(gptWords / Math.max(1, plainWords)).toFixed(1)}× longer`}
-            show={inView}
-            delay={0.15}
-          >
-            <p className="font-script text-[0.86rem] leading-[1.65] text-ink/80">
-              <Struck text={gptPrompt} phrases={dropped} active={strike} />
-            </p>
-            {dropped.length > 0 && (
-              <p className="mt-3 text-xs text-ink/55">
-                <span className="line-through decoration-accent decoration-2">Struck through</span>: details the model
-                ignored
-              </p>
+        <div className="mt-10">
+          <ScenarioTabs sid={sid} onChange={onScenario} />
+        </div>
+
+        <div className="mt-10 space-y-6 md:space-y-8">
+          <Carousel
+            key={`plain-${s.id}`}
+            count={plainCount}
+            caption={(i) => <PromptCaption title="Plain prompt" text={s.query} counter={`Take ${i + 1} / ${plainCount}`} />}
+            slide={(i, live) => <ModelPair order={MODEL_ORDER} takes={takesAt(s.plain, MODEL_ORDER, i)} live={live} />}
+          />
+          <Carousel
+            key={`gpt-${s.id}`}
+            count={gptCount}
+            caption={(i) => (
+              <PromptCaption
+                title={`GPT-enhanced prompt v${i + 1}`}
+                text={s.enhanced.prompts[i] ?? ''}
+                counter={`v${i + 1} / ${gptCount}`}
+                dropped={s.enhanced.dropped}
+              />
             )}
-          </Approach>
+            slide={(i, live) => <ModelPair order={MODEL_ORDER} takes={takesAt(s.enhanced.takes, MODEL_ORDER, i)} live={live} />}
+          />
         </div>
 
         <motion.div
@@ -103,13 +72,13 @@ export function Problem() {
           initial={{ opacity: 0, y: 20 }}
           animate={tallyIn ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7, ease: EASE }}
-          className="mt-5 flex flex-col gap-4 rounded-2xl bg-paper/4 p-6 ring-1 ring-paper/10 md:flex-row md:items-center md:gap-12 md:p-8"
+          className="mx-auto mt-8 flex max-w-4xl flex-col items-center gap-4 rounded-3xl bg-paper/4 px-6 py-8 text-center ring-1 ring-paper/10 md:mt-10 md:flex-row md:justify-center md:gap-10 md:px-10 md:text-left"
         >
-          <div className="display shrink-0 text-[clamp(3rem,6vw,5.5rem)] leading-none">
+          <div className="display shrink-0 text-[clamp(3rem,5.5vw,5rem)] leading-none">
             <Counter from={0} value={tallyIn ? total : 0} duration={1.2} /> <span className="text-paper/40">takes</span>
           </div>
           <div>
-            <p className="font-serif text-[clamp(1.4rem,2.4vw,2.2rem)] leading-snug">Longer prompts don’t fix it.</p>
+            <p className="font-serif text-[clamp(1.4rem,2.2vw,2rem)] leading-snug">Longer prompts don’t fix it.</p>
             <p className="mt-2 leading-relaxed text-paper/60">
               <Phrases text={`${total} takes later, | it is still not the scene in their head.\nEvery reroll burns time and credits.`} />
             </p>
@@ -120,82 +89,45 @@ export function Problem() {
   );
 }
 
-/** One prompting approach: title, the prompt itself, its word count, and the takes it produced. */
-function Approach({
-  n,
-  title,
-  note,
-  takes,
-  model,
-  words,
-  badge,
-  show,
-  delay,
-  children,
-}: {
-  n: string;
-  title: string;
-  note: string;
-  takes: Take[];
-  model: string;
-  words: number;
-  badge?: string;
-  show: boolean;
-  delay: number;
-  children: ReactNode;
-}) {
+/** Prompt shown above a slide: label, word count, slide counter, and the prompt itself. */
+function PromptCaption({ title, text, counter, dropped = [] }: { title: string; text: string; counter: string; dropped?: string[] }) {
+  const [open, setOpen] = useState(false);
+  const long = text.length > 200;
+  const hasDropped = dropped.some((p) => text.toLowerCase().includes(p.toLowerCase()));
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      animate={show ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.7, ease: EASE, delay }}
-      className="flex flex-col rounded-2xl bg-paper/4 p-5 ring-1 ring-paper/10 md:p-7"
-    >
-      <span className="font-script text-sm text-paper/45">{n}</span>
-      <h3 className="mt-1 font-serif text-[clamp(1.6rem,2.4vw,2.2rem)] font-semibold leading-tight">{title}</h3>
-      <p className="mt-2 leading-relaxed text-paper/60">
-        <Phrases text={note} />
+    <div>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <h3 className="text-[0.8rem] font-bold uppercase tracking-[0.18em] text-paper">{title}</h3>
+          <span className="font-script text-xs text-paper/45">{wordCount(text)} words</span>
+        </div>
+        <span className="shrink-0 font-script text-xs text-paper/50">{counter}</span>
+      </div>
+      <p
+        className={`mt-3 font-script text-[clamp(0.9rem,1.05vw,1.02rem)] leading-relaxed text-paper/80 ${
+          long && !open ? 'line-clamp-4 md:line-clamp-none' : ''
+        }`}
+      >
+        “<Struck text={text} phrases={dropped} />”
       </p>
-
-      <div className="surface-light mt-6 flex flex-1 flex-col rounded-xl bg-mist p-5 text-ink md:p-6">
-        {children}
-        <div className="mt-auto flex items-baseline gap-2 pt-6">
-          <span className="display text-[clamp(2rem,3vw,2.75rem)] leading-none">
-            <Counter from={0} value={show ? words : 0} />
+      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
+        {hasDropped && (
+          <span className="text-xs text-paper/45">
+            <span className="line-through decoration-brand-400 decoration-2">Struck through</span>: details the model ignored
           </span>
-          <span className="text-sm text-ink/55">words</span>
-          {badge && <span className="ml-auto rounded-full bg-ink/8 px-3 py-1 text-xs font-semibold text-ink/70">{badge}</span>}
-        </div>
+        )}
+        {long && (
+          <button type="button" onClick={() => setOpen((o) => !o)} className="text-xs text-paper/50 transition-colors hover:text-paper md:hidden">
+            {open ? 'Show less' : 'Show full prompt'}
+          </button>
+        )}
       </div>
-
-      <div className="mt-6">
-        <div className="mb-2 flex items-center justify-between">
-          <span className="hud">Takes on {model}</span>
-          <span className="hud">× {takes.length}</span>
-        </div>
-        <div className="grid gap-2 md:gap-3" style={{ gridTemplateColumns: `repeat(${Math.min(takes.length, 4)}, minmax(0, 1fr))` }}>
-          {takes.map((t, i) =>
-            show ? (
-              <TakeTile
-                key={`${t.src}-${i}`}
-                take={t}
-                index={i}
-                appearDelay={delay + 0.4 + i * 0.1}
-                stampDelay={delay + 1.2 + i * 0.22}
-                compact
-              />
-            ) : (
-              <div key={`${t.src}-${i}`} className="aspect-video rounded-md border border-dashed border-paper/15" />
-            ),
-          )}
-        </div>
-      </div>
-    </motion.div>
+    </div>
   );
 }
 
 /** Strikes through the phrases the model ignored. */
-function Struck({ text, phrases, active }: { text: string; phrases: string[]; active: boolean }) {
+function Struck({ text, phrases }: { text: string; phrases: string[] }) {
   if (!phrases.length) return <>{text}</>;
   const escaped = phrases.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
   const parts = text.split(new RegExp(`(${escaped.join('|')})`, 'gi'));
@@ -204,12 +136,7 @@ function Struck({ text, phrases, active }: { text: string; phrases: string[]; ac
     <>
       {parts.map((p, i) =>
         lower.includes(p.toLowerCase()) ? (
-          <span
-            key={i}
-            className={`line-through decoration-2 transition-[text-decoration-color,background-color] duration-700 ${
-              active ? 'bg-black/7 decoration-accent' : 'decoration-transparent'
-            }`}
-          >
+          <span key={i} className="bg-paper/8 line-through decoration-brand-400 decoration-2">
             {p}
           </span>
         ) : (

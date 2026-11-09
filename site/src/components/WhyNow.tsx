@@ -16,7 +16,7 @@ export function WhyNow() {
   return (
     <section id="why-now" className="relative border-t border-paper/10 py-28 md:py-40">
       <div className="mx-auto max-w-[1400px] px-5 md:px-8">
-        <SectionTag n="06" label="Why now" />
+        <SectionTag n="05" label="Why now" />
         <h2 className="display mt-5 text-[clamp(2.2rem,5vw,4.4rem)]">
           <RevealWords text="Creators already pay | to generate." />
         </h2>

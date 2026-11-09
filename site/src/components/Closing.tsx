@@ -35,7 +35,7 @@ export function Closing() {
     <>
       <section id="roadmap" className="border-t border-paper/10 py-28 md:py-36">
         <div className="mx-auto max-w-[1400px] px-5 md:px-8">
-          <SectionTag n="07" label="Roadmap" />
+          <SectionTag n="06" label="Roadmap" />
           <h2 className="display mt-5 text-[clamp(2.2rem,4.6vw,4.2rem)]">
             <RevealWords text={'From a video MVP\nto a universal | directing engine.'} />
           </h2>
@@ -60,7 +60,7 @@ export function Closing() {
 
       <section id="team" className="border-t border-paper/10 py-28 md:py-36">
         <div className="mx-auto max-w-[1400px] px-5 md:px-8">
-          <SectionTag n="08" label="Team" />
+          <SectionTag n="07" label="Team" />
           <h2 className="display mt-5 text-[clamp(2.2rem,4.6vw,4.2rem)]">Team Yonsei</h2>
           <div className="mt-12 grid gap-4 md:grid-cols-3">
             {SITE.team.map((m) => (

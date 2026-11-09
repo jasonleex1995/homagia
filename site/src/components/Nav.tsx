@@ -5,8 +5,8 @@ import { EASE } from './ui';
 
 const LINKS = [
   { href: '#problem', label: 'Problem' },
-  { href: '#how', label: 'How it works' },
-  { href: '#results', label: 'Results' },
+  { href: '#solution', label: 'Solution' },
+  { href: '#method', label: 'Under the hood' },
   { href: '#team', label: 'Team' },
 ];
 

@@ -16,4 +16,5 @@ export const MODELS: Record<ModelId, { label: string }> = {
   kling: { label: 'Kling' },
 };
 
-export const MODEL_IDS = Object.keys(MODELS) as ModelId[];
+/** Left-to-right order of the model columns on every stage card. */
+export const MODEL_ORDER: ModelId[] = ['kling', 'seedance'];

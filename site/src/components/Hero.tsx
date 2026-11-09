@@ -145,7 +145,7 @@ export function Hero() {
           transition={{ delay: 1.95, duration: 0.9, ease: EASE }}
           className="mt-8 flex flex-wrap items-center justify-center gap-3"
         >
-          <a href="#how" className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-paper transition-colors hover:bg-brand-400">
+          <a href="#solution" className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-paper transition-colors hover:bg-brand-400">
             See how it works
           </a>
           {SITE.demoVideo && (

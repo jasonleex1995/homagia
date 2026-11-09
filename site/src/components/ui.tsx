@@ -1,13 +1,11 @@
 import { animate, motion, useMotionValue, useTransform } from 'motion/react';
 import { Fragment, useEffect, type ReactNode } from 'react';
-import { MODELS, MODEL_IDS } from '../data/site';
-import type { ModelId } from '../data/types';
 
 export const EASE = [0.16, 1, 0.3, 1] as const;
 
-export function SectionTag({ n, label }: { n: string; label: string }) {
+export function SectionTag({ n, label, center = false }: { n: string; label: string; center?: boolean }) {
   return (
-    <div className="flex items-center gap-3">
+    <div className={`flex items-center gap-3 ${center ? 'justify-center' : ''}`}>
       <span className="font-script text-sm text-glow">{n}</span>
       <span className="h-px w-10 bg-paper/25" />
       <span className="text-[0.72rem] font-bold uppercase tracking-[0.2em] text-paper/55">{label}</span>
@@ -151,41 +149,9 @@ export function PlaceholderBadge({ show, className = '' }: { show?: boolean; cla
   );
 }
 
-export function ModelToggle({ id, value, onChange, tone = 'dark' }: { id: string; value: ModelId; onChange: (m: ModelId) => void; tone?: 'dark' | 'light' }) {
-  const dark = tone === 'dark';
-  return (
-    <div className={`inline-flex rounded-full p-1 ${dark ? 'bg-paper/10' : 'bg-ink/7'}`}>
-      {MODEL_IDS.map((m) => (
-        <button key={m} type="button" onClick={() => onChange(m)} className="relative rounded-full px-4 py-1.5 text-sm font-semibold">
-          {value === m && (
-            <motion.span
-              layoutId={`toggle-${id}`}
-              className="absolute inset-0 rounded-full bg-accent"
-              transition={{ type: 'spring', stiffness: 500, damping: 40 }}
-            />
-          )}
-          <span className={`relative ${value === m ? 'text-paper' : dark ? 'text-paper/65' : 'text-ink/55'}`}>{MODELS[m].label}</span>
-        </button>
-      ))}
-    </div>
-  );
-}
-
 export const SearchIcon = ({ className = '' }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={`h-5 w-5 ${className}`} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
     <circle cx="11" cy="11" r="7" />
     <path d="m20 20-3.5-3.5" />
-  </svg>
-);
-
-export const PlayIcon = () => (
-  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>
-    <path d="M7 5v14l12-7z" />
-  </svg>
-);
-
-export const PauseIcon = () => (
-  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>
-    <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
   </svg>
 );
